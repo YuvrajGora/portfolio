@@ -45,17 +45,37 @@ export default function Contact() {
     if (Object.keys(validationErrors).length > 0) return;
 
     setStatus("sending");
-    try {
-      // Wire this up to your email provider of choice
-      // (Formspree, Resend, EmailJS, or a custom backend endpoint).
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setStatus("sent");
-      setForm(initialForm);
-      setTimeout(() => setStatus("idle"), 3000);
-    } catch {
-      setStatus("error");
-    }
+
+try {
+  const response = await fetch("https://api.web3forms.com/submit", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      access_key: "79d96416-4dca-4ca5-8412-ca1987ca5859",
+      name: form.name,
+      email: form.email,
+      subject: form.subject,
+      message: form.message,
+    }),
+  });
+
+  const result = await response.json();
+
+  if (result.success) {
+    setStatus("sent");
+    setForm(initialForm);
+    setTimeout(() => setStatus("idle"), 3000);
+  } else {
+    console.error("Web3Forms error:", result);
+    setStatus("error");
   }
+} catch (error) {
+  console.error("Contact form error:", error);
+  setStatus("error");
+}
 
   return (
     <section id="contact" className="relative py-32">
